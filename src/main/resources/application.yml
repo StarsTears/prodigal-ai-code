@@ -1,0 +1,60 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+spring:
+  application:
+    name: prodigal-ai-code
+  profiles:
+    active: local
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/prodigal_ai_code?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    username: root
+    password: 123456
+
+  # MyBatis-Flex 配置
+  mybatis-flex:
+    configuration:
+      map-underscore-to-camel-case: true
+      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    mapper-locations: classpath*:mapper/*.xml
+
+# springdoc-openapi http://localhost:9901/api/doc.html#/
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter:  alpha
+    operations-sorter:  alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group:  'local'
+      paths-to-match: '/**'
+      packages-to-scan: com.prodigal.aicode.controller
+# knife4j
+knife4j:
+  enable: true
+  setting:
+    language: zh-CN
+    enable-swagger-models: true
+    enable-document-manage: true
+    swagger-model-name: 实体类列表
+    enable-version: false
+    enable-reload-cache-parameter: false
+    enable-after-script: true
+    enable-filter-multipart-api-method-type: POST
+    enable-filter-multipart-apis: false
+    enable-request-cache: true
+    enable-host: false
+    enable-host-text: ""
+    enable-home-custom: false
+    home-custom-path: ""
+    enable-search: true
+    enable-footer: false
+    enable-footer-custom: true
+    footer-custom-content: Apache License 2.0 | Copyright  2024-[Prodigal AI Code]
+    enable-dynamic-parameter: false
+    enable-debug: true
+    enable-open-api: false
+    enable-group: true
