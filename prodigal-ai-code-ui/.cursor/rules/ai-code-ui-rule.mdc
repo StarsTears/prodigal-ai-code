@@ -1,0 +1,6 @@
+---
+description: generate ui vue code
+globs:
+alwaysApply: false
+---
+生成前端 vue代码时，使用Vue3的组合式API 语法
