@@ -23,9 +23,9 @@
       <!-- 右侧：用户信息 -->
       <div class="header-right">
         <!-- 未登录状态 -->
-        <a-button 
-          v-if="!userStore.isLoggedIn" 
-          type="primary" 
+        <a-button
+          v-if="!userStore.isLoggedIn"
+          type="primary"
           @click="handleLogin"
         >
           <template #icon>
@@ -33,7 +33,7 @@
           </template>
           登录
         </a-button>
-        
+
         <!-- 已登录状态 -->
         <div v-else class="user-info">
           <a-dropdown>
@@ -70,11 +70,11 @@
 <script setup lang="ts">
 import { ref, reactive, h } from 'vue'
 import { useRouter } from 'vue-router'
-import { Layout, Menu, Button, Avatar, Dropdown } from 'ant-design-vue'
+import {Layout, Menu, Button, Avatar, Dropdown, message} from 'ant-design-vue'
 import { UserOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons-vue'
 import type { MenuProps } from 'ant-design-vue'
 import { useUserStore } from '@/stores/user'
-
+import { logout} from "@/api/userController.ts";
 const { Header } = Layout
 
 const router = useRouter()
@@ -107,8 +107,12 @@ const menuItems = reactive<MenuProps['items']>([
 
 // 菜单点击处理
 const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
-  selectedKeys.value = [key]
-  switch (key) {
+  const path = key as string
+  selectedKeys.value = [path]
+  // if (path.startsWith('/')){
+  //   router.push(path)
+  // }
+  switch (path) {
     case 'home':
       router.push('/')
       break
@@ -130,9 +134,23 @@ const handleLogin = () => {
 }
 
 // 登出处理
-const handleLogout = () => {
-  userStore.logout()
-  router.push('/')
+const handleLogout = async () => {
+  try {
+    const res = await logout()
+    if (res.data.code === 0) {
+      userStore.logout()
+      message.success('退出成功！')
+      router.push('/')
+    } else {
+      message.error('退出失败：' + (res.data.msg || '请重试'))
+    }
+  } catch (error) {
+    console.error('退出登录错误:', error)
+    // 即使API调用失败，也要清除本地状态
+    userStore.logout()
+    message.success('已退出登录')
+    router.push('/')
+  }
 }
 </script>
 

@@ -4,23 +4,24 @@ import { useRouter } from 'vue-router'
 import { Card, Form, Input, Button, Typography, Space, Divider, message } from 'ant-design-vue'
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons-vue'
 import { useUserStore } from '@/stores/user'
+import {getLoginUser, login} from "@/api/userController.ts";
 
 const { Title, Paragraph } = Typography
 const router = useRouter()
 const userStore = useUserStore()
 
 // 表单数据
-const formData = reactive({
-  username: '',
-  password: ''
+const formData = reactive<API.UserLoginDto>({
+  userAccount: '',
+  userPassword: ''
 })
 
 // 表单验证规则
 const rules = {
-  username: [
+  userAccount: [
     { required: true, message: '请输入用户名或邮箱' }
   ],
-  password: [
+  userPassword: [
     { required: true, message: '请输入密码' },
     { min: 6, message: '密码长度不能少于6位' }
   ]
@@ -28,21 +29,23 @@ const rules = {
 
 // 登录处理
 const handleLogin = async (values: any) => {
+  console.log('登录信息:', values)
   try {
-    console.log('登录信息:', values)
-    // 模拟登录成功
-    const userInfo = {
-      id: '1',
-      username: values.username,
-      email: values.username.includes('@') ? values.username : `${values.username}@example.com`,
-      nickname: values.username,
-      avatar: '/logo.svg'
+    const res = await login(values)
+    if (res.data.code === 0 && res.data.data) {
+      // 登录成功后，获取并更新用户信息
+      const success = await userStore.fetchLoginUser()
+      if (success) {
+        message.success('登录成功！')
+        router.push('/')
+      } else {
+        message.error('登录失败，请重试')
+      }
+    } else {
+      message.error('登录失败：' + (res.data.msg || '请检查用户名和密码'))
     }
-    
-    userStore.login(userInfo)
-    message.success('登录成功！')
-    router.push('/')
   } catch (error) {
+    console.error('登录错误:', error)
     message.error('登录失败，请重试')
   }
 }
@@ -64,41 +67,57 @@ const goToRegister = () => {
             请登录您的账户以继续使用我们的服务
           </Paragraph>
         </div>
-        
-        <Form 
+
+        <Form
           :model="formData"
           :rules="rules"
           @finish="handleLogin"
           layout="vertical"
           size="large"
         >
-          <Form.Item 
-            label="用户名或邮箱" 
-            name="username"
+          <Form.Item
+            label="用户名或邮箱"
+            name="userAccount"
           >
-            <Input 
-              v-model:value="formData.username"
+<!--            <Input-->
+<!--              v-model:value="formData.userAccount"-->
+<!--              placeholder="请输入用户名或邮箱"-->
+<!--              :prefix="UserOutlined"-->
+<!--            />-->
+            <Input
+              v-model:value="formData.userAccount"
               placeholder="请输入用户名或邮箱"
-              :prefix="UserOutlined"
-            />
+            >
+              <template #prefix>
+                <UserOutlined />
+              </template>
+            </Input>
           </Form.Item>
-          
-          <Form.Item 
-            label="密码" 
-            name="password"
+
+          <Form.Item
+            label="密码"
+            name="userPassword"
           >
-            <Input.Password 
-              v-model:value="formData.password"
+<!--            <Input.Password-->
+<!--              v-model:value="formData.userPassword"-->
+<!--              placeholder="请输入密码"-->
+<!--              :prefix="LockOutlined"-->
+<!--            />-->
+            <Input.Password
+              v-model:value="formData.userPassword"
               placeholder="请输入密码"
-              :prefix="LockOutlined"
-            />
+            >
+              <template #prefix>
+                <LockOutlined />
+              </template>
+            </Input.Password>
           </Form.Item>
-          
+
           <Form.Item>
-            <Button 
-              type="primary" 
-              html-type="submit" 
-              size="large" 
+            <Button
+              type="primary"
+              html-type="submit"
+              size="large"
               block
               class="login-button"
             >
@@ -106,15 +125,15 @@ const goToRegister = () => {
             </Button>
           </Form.Item>
         </Form>
-        
+
         <Divider>或者</Divider>
-        
+
         <div class="login-footer">
           <Paragraph style="text-align: center; margin-bottom: 16px">
             还没有账户？
             <a @click="goToRegister" class="register-link">立即注册</a>
           </Paragraph>
-          
+
           <Space direction="vertical" size="small" style="width: 100%">
             <Button block size="large" class="social-login-btn">
               <template #icon>
@@ -192,18 +211,18 @@ const goToRegister = () => {
   .login-container {
     padding: 16px;
   }
-  
+
   .login-card {
     max-width: 100%;
   }
-  
+
   .login-header {
     margin-bottom: 24px;
   }
-  
+
   .login-logo {
     width: 48px;
     height: 48px;
   }
 }
-</style> 
+</style>

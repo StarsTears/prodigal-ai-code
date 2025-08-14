@@ -5,9 +5,9 @@ import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
 
-onMounted(() => {
+onMounted(async () => {
   // 初始化用户信息
-  userStore.initUserInfo()
+  await userStore.initUserInfo()
 })
 </script>
 

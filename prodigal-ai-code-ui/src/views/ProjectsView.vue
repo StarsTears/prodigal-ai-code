@@ -84,16 +84,20 @@ const projects = [
               <Button
                 type="primary"
                 size="small"
-                :icon="GithubOutlined"
                 @click="window.open(project.github, '_blank')"
               >
+                <template #icon>
+                  <GithubOutlined />
+                </template>
                 GitHub
               </Button>
               <Button
                 size="small"
-                :icon="LinkOutlined"
                 @click="window.open(project.demo, '_blank')"
               >
+                <template #icon>
+                  <LinkOutlined />
+                </template>
                 演示
               </Button>
             </Space>

@@ -11,7 +11,7 @@ const { Title, Paragraph } = Typography
         <Card>
           <Title level="2">欢迎来到 Prodigal AI Code</Title>
           <Paragraph>
-            这是一个基于 Spring boot 3 + Mybatis Flex + MySQL + Vue 3 + TypeScript + Ant Design Vue 构建的现代化前后端分离项目。
+            这是一个基于 Spring boot 3 + Mybatis Flex + MySQL + Vue 3 + TypeScript + Ant Design Vue + Axios + Umijs 构建的现代化前后端分离项目。
           </Paragraph>
           <Space direction="vertical" size="large">
             <div>
@@ -25,6 +25,8 @@ const { Title, Paragraph } = Typography
                 <li>Vue 3 (Composition API)</li>
                 <li>TypeScript</li>
                 <li>Ant Design Vue</li>
+                <li>Axios(请求工具)</li>
+                <li>Umijs(openAPI工具)</li>
                 <li>Vue Router</li>
                 <li>Pinia (状态管理)</li>
                 <li>Vite (构建工具)</li>
