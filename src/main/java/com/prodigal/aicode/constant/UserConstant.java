@@ -9,4 +9,6 @@ package com.prodigal.aicode.constant;
  */
 public interface UserConstant {
     String USER_LOGIN_KEY = "user_login";
+    String ADMIN_ROLE = "admin";
+    String USER_ROLE = "user";
 }

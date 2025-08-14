@@ -15,7 +15,7 @@ import java.io.Serializable;
 @Schema(description = "统一响应结果")
 public class BaseResult<T> implements Serializable {
     private static final long serialVersionUID = 1L;
-    @Schema(description = "响应码", example = "200")
+    @Schema(description = "响应码", example = "0")
     private int code;
     @Schema(description = "响应状态",example = "true")
     private boolean status;

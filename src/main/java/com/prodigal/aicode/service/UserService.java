@@ -1,11 +1,16 @@
 package com.prodigal.aicode.service;
 
+import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
 import com.prodigal.aicode.model.dto.user.UserLoginDto;
+import com.prodigal.aicode.model.dto.user.UserQueryDto;
 import com.prodigal.aicode.model.dto.user.UserRegisterDto;
 import com.prodigal.aicode.model.entity.User;
 import com.prodigal.aicode.model.vo.LoginUserVO;
+import com.prodigal.aicode.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.List;
 
 /**
  * 用户 服务层。
@@ -34,5 +39,11 @@ public interface UserService extends IService<User> {
 
     boolean userLogout(HttpServletRequest request);
 
+    QueryWrapper buildQueryWrapper(UserQueryDto userQueryDto);
+
     LoginUserVO getLoginUserVO(User user);
+
+    UserVO getUserVO(User user);
+
+    List<UserVO> getUserVOList(List<User> userList);
 }

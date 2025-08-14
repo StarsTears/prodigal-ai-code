@@ -9,16 +9,23 @@ import com.prodigal.aicode.exception.BusinessException;
 import com.prodigal.aicode.exception.ErrorCode;
 import com.prodigal.aicode.exception.ThrowUtils;
 import com.prodigal.aicode.model.dto.user.UserLoginDto;
+import com.prodigal.aicode.model.dto.user.UserQueryDto;
 import com.prodigal.aicode.model.dto.user.UserRegisterDto;
 import com.prodigal.aicode.model.entity.User;
 import com.prodigal.aicode.mapper.UserMapper;
 import com.prodigal.aicode.model.vo.LoginUserVO;
+import com.prodigal.aicode.model.vo.UserVO;
 import com.prodigal.aicode.service.UserService;
 import com.prodigal.aicode.utils.EmailValidatorUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 用户 服务层实现。
@@ -87,7 +94,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = this.mapper.selectOneByQuery(queryWrapper);
         ThrowUtils.throwIf(user == null, ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
         //记录用户登录态
-        request.getSession().setAttribute("user", user.getId());
+        request.getSession().setAttribute(UserConstant.USER_LOGIN_KEY, user);
         return this.getLoginUserVO(user);
     }
 
@@ -115,10 +122,39 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    public QueryWrapper buildQueryWrapper(UserQueryDto userQueryDto) {
+        ThrowUtils.throwIf(userQueryDto == null, ErrorCode.PARAMS_ERROR,"请求参数为空");
+        return QueryWrapper.create()
+                .eq(User::getId, userQueryDto.getId())
+                .eq(User::getUserName, userQueryDto.getUserName())
+                .like(User::getUserAccount, userQueryDto.getUserAccount())
+                .like(User::getUserEmail, userQueryDto.getUserEmail())
+                .like(User::getUserProfile, userQueryDto.getUserProfile())
+                .orderBy(userQueryDto.getSortField(), userQueryDto.getSortOrder().equals("ascend"));
+    }
+
+
+    @Override
     public LoginUserVO getLoginUserVO(User user) {
         if (user == null) return null;
         LoginUserVO loginUserVO = new LoginUserVO();
         BeanUtils.copyProperties(user, loginUserVO);
         return loginUserVO;
+    }
+
+    @Override
+    public UserVO getUserVO(User user) {
+        if (user == null) return null;
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user, userVO);
+        return userVO;
+    }
+    @Override
+    public List<UserVO> getUserVOList(List<User> userList) {
+        if (CollectionUtils.isEmpty(userList))
+            return new ArrayList<>();
+        return userList.stream()
+                .map(this::getUserVO)
+                .collect(Collectors.toList());
     }
 }
