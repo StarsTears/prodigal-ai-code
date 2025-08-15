@@ -4,7 +4,7 @@
       <!-- 左侧：Logo和标题 -->
       <div class="header-left">
         <div class="logo-container">
-          <img src="/logo.svg" alt="Logo" class="logo" />
+          <img src="/logo_cat.jpg" alt="Logo" class="logo" />
           <h1 class="site-title">Prodigal AI Code</h1>
         </div>
       </div>
@@ -44,7 +44,7 @@
               <span class="user-nickname">{{ userStore.nickname }}</span>
             </div>
             <template #overlay>
-              <a-menu>
+              <a-menu @click="handleUserMenuClick">
                 <a-menu-item key="profile">
                   <template #icon><UserOutlined /></template>
                   个人资料
@@ -54,7 +54,7 @@
                   设置
                 </a-menu-item>
                 <a-menu-divider />
-                <a-menu-item key="logout" @click="handleLogout">
+                <a-menu-item key="logout">
                   <template #icon><LogoutOutlined /></template>
                   退出登录
                 </a-menu-item>
@@ -64,25 +64,31 @@
         </div>
       </div>
     </div>
+
+    <!-- 个人资料组件 -->
+    <ProfileComponent ref="profileComponentRef" />
   </a-layout-header>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, h } from 'vue'
+import { ref, reactive, h, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {Layout, Menu, Button, Avatar, Dropdown, message} from 'ant-design-vue'
 import { UserOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons-vue'
 import type { MenuProps } from 'ant-design-vue'
 import { useUserStore } from '@/stores/user'
 import { logout} from "@/api/userController.ts";
+import ProfileComponent from '@/components/user/ProfileComponent.vue'
+
 const { Header } = Layout
 
 const router = useRouter()
 const userStore = useUserStore()
 const selectedKeys = ref<string[]>(['home'])
+const profileComponentRef = ref()
 
-// 菜单配置
-const menuItems = reactive<MenuProps['items']>([
+// 基础菜单项（始终显示）
+const baseMenuItems = [
   {
     key: 'home',
     label: '首页',
@@ -103,15 +109,59 @@ const menuItems = reactive<MenuProps['items']>([
     label: '联系我们',
     icon: () => h('span', '📞')
   }
-])
+]
+
+// 需要登录才能访问的菜单项
+const authMenuItems = [
+
+]
+
+// 管理员菜单项
+const adminMenuItems = [
+  {
+    key: 'user-management',
+    label: '用户管理',
+    icon: () => h('span', '👥')
+  }
+]
+
+// 根据登录状态和用户角色动态生成菜单项
+const menuItems = computed<MenuProps['items']>(() => {
+  let items = [...baseMenuItems]
+
+  if (userStore.isLoggedIn) {
+    items = [...items, ...authMenuItems]
+
+    // 如果是管理员，添加管理员菜单
+    if (userStore.userInfo?.userRole === 'admin') {
+      items = [...items, ...adminMenuItems]
+    }
+  }
+
+  return items
+})
+
+// 监听路由变化，更新选中的菜单项
+watch(() => router.currentRoute.value.path, (newPath) => {
+  const pathMap: Record<string, string> = {
+    '/': 'home',
+    '/about': 'about',
+    '/projects': 'projects',
+    '/contact': 'contact',
+    '/user-management': 'user-management',
+    '/profile': 'profile'
+  }
+  const key = pathMap[newPath]
+  if (key) {
+    selectedKeys.value = [key]
+  }
+}, { immediate: true })
 
 // 菜单点击处理
 const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
   const path = key as string
   selectedKeys.value = [path]
-  // if (path.startsWith('/')){
-  //   router.push(path)
-  // }
+
   switch (path) {
     case 'home':
       router.push('/')
@@ -120,10 +170,28 @@ const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
       router.push('/about')
       break
     case 'projects':
-      router.push('/projects')
+      if (userStore.isLoggedIn) {
+        router.push('/projects')
+      } else {
+        message.warning('请先登录')
+        router.push('/login')
+      }
       break
     case 'contact':
-      router.push('/contact')
+      if (userStore.isLoggedIn) {
+        router.push('/contact')
+      } else {
+        message.warning('请先登录')
+        router.push('/login')
+      }
+      break
+    case 'user-management':
+      if (userStore.isLoggedIn && userStore.userInfo?.userRole === 'admin') {
+        router.push('/user-management')
+      } else {
+        message.warning('需要管理员权限')
+        router.push('/')
+      }
       break
   }
 }
@@ -133,6 +201,22 @@ const handleLogin = () => {
   router.push('/login')
 }
 
+// 用户菜单点击处理
+const handleUserMenuClick: MenuProps['onClick'] = ({ key }) => {
+  switch (key) {
+    case 'profile':
+      // 显示个人资料模态框
+      profileComponentRef.value?.showProfileModal()
+      break
+    case 'settings':
+      message.info('设置功能开发中...')
+      break
+    case 'logout':
+      handleLogout()
+      break
+  }
+}
+
 // 登出处理
 const handleLogout = async () => {
   try {
@@ -140,7 +224,11 @@ const handleLogout = async () => {
     if (res.data.code === 0) {
       userStore.logout()
       message.success('退出成功！')
-      router.push('/')
+      // 如果当前在需要登录的页面，跳转到首页
+      const currentPath = router.currentRoute.value.path
+      if (['/projects', '/contact', '/profile'].includes(currentPath)) {
+        router.push('/')
+      }
     } else {
       message.error('退出失败：' + (res.data.msg || '请重试'))
     }
@@ -149,7 +237,11 @@ const handleLogout = async () => {
     // 即使API调用失败，也要清除本地状态
     userStore.logout()
     message.success('已退出登录')
-    router.push('/')
+    // 如果当前在需要登录的页面，跳转到首页
+    const currentPath = router.currentRoute.value.path
+    if (['/projects', '/contact', '/profile'].includes(currentPath)) {
+      router.push('/')
+    }
   }
 }
 </script>

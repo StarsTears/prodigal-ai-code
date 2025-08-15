@@ -12,6 +12,8 @@ const { Title, Paragraph } = Typography
           <Title level="2">欢迎来到 Prodigal AI Code</Title>
           <Paragraph>
             这是一个基于 Spring boot 3 + Mybatis Flex + MySQL + Vue 3 + TypeScript + Ant Design Vue + Axios + Umijs 构建的现代化前后端分离项目。
+            <br/>
+           可在 vite.config.ts 中打开vueDevTools(),即开启调试环境
           </Paragraph>
           <Space direction="vertical" size="large">
             <div>
