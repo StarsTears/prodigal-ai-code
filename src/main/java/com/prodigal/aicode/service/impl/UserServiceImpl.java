@@ -127,6 +127,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return QueryWrapper.create()
                 .eq(User::getId, userQueryDto.getId())
                 .eq(User::getUserName, userQueryDto.getUserName())
+                .eq(User::getUserRole, userQueryDto.getUserRole())
                 .like(User::getUserAccount, userQueryDto.getUserAccount())
                 .like(User::getUserEmail, userQueryDto.getUserEmail())
                 .like(User::getUserProfile, userQueryDto.getUserProfile())

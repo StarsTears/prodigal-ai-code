@@ -14,7 +14,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
  * @description json 配置 修复 Long 类型精度丢失问题
  * @since 2025/8/14
  */
-//@JsonComponent
+@JsonComponent
 public class JsonConfig {
     @Bean
     public ObjectMapper jacksonObjectMapper(Jackson2ObjectMapperBuilder  builder) {
